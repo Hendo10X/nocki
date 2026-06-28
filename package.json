@@ -1,0 +1,30 @@
+{
+  "name": "@nocki/cli",
+  "version": "0.1.0",
+  "description": "Local development process orchestrator — boot ordering, health checks, supervision, and unified logs for multi-service projects.",
+  "type": "module",
+  "bin": {
+    "nocki": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "build": "bun build ./src/index.ts --compile --outfile dist/nocki",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cli",
+    "process-manager",
+    "orchestrator",
+    "local-development",
+    "bun"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "yaml": "^2.5.0"
+  }
+}

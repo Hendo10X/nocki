@@ -1,0 +1,35 @@
+# Example nocki configuration.
+# This demo uses portable shell commands so it runs without any real services.
+# Replace with your own services (api, worker, web, redis, ...).
+version: 1
+
+services:
+  # A "cache" that's ready as soon as it starts (no health check).
+  cache:
+    cmd: "while true; do sleep 1; done"
+
+  # An "api" that depends on the cache and reports healthy via a command check.
+  api:
+    cmd: "echo 'api: listening on :3001'; while true; do sleep 1; done"
+    depends_on: [cache]
+    health_check:
+      cmd: "true"
+      timeout: 5s
+      interval: 500ms
+    restart:
+      policy: on-failure
+      max_attempts: 3
+      window: 60s
+    env:
+      NODE_ENV: development
+
+  # A worker and web frontend that boot in parallel after the api.
+  worker:
+    cmd: "echo 'worker: connected to queue'; while true; do sleep 1; done"
+    depends_on: [api]
+    restart:
+      policy: always
+
+  web:
+    cmd: "echo 'web: dev server ready'; while true; do sleep 1; done"
+    depends_on: [api]
