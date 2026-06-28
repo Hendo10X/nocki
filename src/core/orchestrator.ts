@@ -7,7 +7,7 @@ import {
   topoLevels,
   type DependencyGraph,
 } from "../graph/graph.ts";
-import { spawnService } from "../process/spawn.ts";
+import { spawnService, signalTree } from "../process/spawn.ts";
 import { waitForHealthy } from "../health/check.ts";
 import { LogBus } from "../log/bus.ts";
 import { assignColors } from "../util/colors.ts";
@@ -55,6 +55,7 @@ export class Orchestrator {
         startedAt: null,
         lastExitCode: null,
         pid: null,
+        roots: new Set(),
         degradedReason: null,
       });
     }
@@ -177,22 +178,32 @@ export class Orchestrator {
     const handle = spawnService(entry.service, this.bus);
     entry.process = handle.process;
     entry.pid = handle.pid;
+    entry.roots.add(handle.pid);
     entry.startedAt = new Date();
     entry.status = "starting";
     entry.degradedReason = null;
     this.emitChange();
 
-    void handle.process.exited.then((exitCode) => this.onExit(entry, exitCode));
+    void handle.process.exited.then((exitCode) =>
+      this.onExit(entry, exitCode, handle.pid),
+    );
   }
 
-  private onExit(entry: ProcessEntry, exitCode: number): void {
+  private onExit(entry: ProcessEntry, exitCode: number, pid: number): void {
     const name = entry.service.name;
+    entry.roots.delete(pid);
     entry.lastExitCode = exitCode;
-    entry.process = null;
-    entry.pid = null;
+    // Only clear the live handle if this exit is for the current generation;
+    // a stale generation exiting must not blank out a newer running process.
+    if (entry.pid === pid) {
+      entry.process = null;
+      entry.pid = null;
+    }
 
     if (this.intentionalStop.has(name) || this.shuttingDown) {
-      this.intentionalStop.delete(name);
+      // Keep the flag until every generation has exited so a lingering
+      // straggler can't be misread as a crash and restarted.
+      if (entry.roots.size === 0) this.intentionalStop.delete(name);
       this.setStatus(name, "stopped");
       return;
     }
@@ -238,10 +249,20 @@ export class Orchestrator {
 
     entry.restartTimes.push(now);
     entry.restarts += 1;
-    this.bus.system(name, `Restarting (attempt ${entry.restarts}).`);
-    this.spawnAndSupervise(entry);
 
-    void this.watchHealthAfterRestart(entry);
+    // Backoff before respawn: avoids crash-storms and gives the OS time to
+    // release resources (e.g. a port) the previous generation held.
+    const delay = Math.min(entry.restartTimes.length * 250, 2000);
+    this.bus.system(
+      name,
+      `Restarting (attempt ${entry.restarts}) in ${formatDuration(delay)}.`,
+    );
+
+    setTimeout(() => {
+      if (this.shuttingDown || this.intentionalStop.has(name)) return;
+      this.spawnAndSupervise(entry);
+      void this.watchHealthAfterRestart(entry);
+    }, delay);
   }
 
   private async watchHealthAfterRestart(entry: ProcessEntry): Promise<void> {
@@ -320,7 +341,7 @@ export class Orchestrator {
       await Promise.all(
         level.map(async (name) => {
           const entry = this.registry.get(name)!;
-          if (entry.process) {
+          if (entry.process || entry.roots.size > 0) {
             this.intentionalStop.add(name);
             await this.killProcess(entry);
             this.setStatus(name, "stopped");
@@ -334,24 +355,34 @@ export class Orchestrator {
   }
 
   private async killProcess(entry: ProcessEntry, graceMs = 5000): Promise<void> {
+    // Kill every tracked root, not just the current handle: a crash-storm can
+    // leave a straggler generation whose tree still holds a port.
+    const roots = [...entry.roots];
     const proc = entry.process;
-    if (!proc) return;
+    if (roots.length === 0 && !proc) return;
+    const exited = proc?.exited ?? Promise.resolve(0);
 
-    try {
-      proc.kill("SIGTERM");
-    } catch {}
+    // Windows consoles don't handle a graceful close signal, so force-kill the
+    // whole tree at once. taskkill /T reaps children that hold ports.
+    if (process.platform === "win32") {
+      for (const pid of roots) signalTree(pid, "SIGKILL");
+      await exited;
+      entry.roots.clear();
+      return;
+    }
 
-    const exited = proc.exited;
+    // POSIX: signal each process group (the child is a group leader because it
+    // was spawned detached), so grandchildren that hold ports die too.
+    for (const pid of roots) signalTree(pid, "SIGTERM");
     const timeout = new Promise<"timeout">((resolve) =>
       setTimeout(() => resolve("timeout"), graceMs),
     );
     const result = await Promise.race([exited.then(() => "exited" as const), timeout]);
 
     if (result === "timeout") {
-      try {
-        proc.kill("SIGKILL");
-      } catch {}
+      for (const pid of [...entry.roots]) signalTree(pid, "SIGKILL");
       await exited;
     }
+    entry.roots.clear();
   }
 }

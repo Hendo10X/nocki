@@ -12,12 +12,34 @@ export function spawnService(service: Service, bus: LogBus): SpawnHandle {
     env: { ...process.env, ...service.env },
     stdout: "pipe",
     stderr: "pipe",
+    detached: true,
   });
 
   pipeStream(proc.stdout, service.name, "stdout", bus);
   pipeStream(proc.stderr, service.name, "stderr", bus);
 
   return { process: proc, pid: proc.pid };
+}
+
+export function signalTree(pid: number, signal: "SIGTERM" | "SIGKILL"): void {
+  if (process.platform === "win32") {
+    const args =
+      signal === "SIGKILL"
+        ? ["/PID", String(pid), "/T", "/F"]
+        : ["/PID", String(pid), "/T"];
+    try {
+      Bun.spawnSync(["taskkill", ...args], { stdout: "ignore", stderr: "ignore" });
+    } catch {}
+    return;
+  }
+
+  try {
+    process.kill(-pid, signal);
+  } catch {
+    try {
+      process.kill(pid, signal);
+    } catch {}
+  }
 }
 
 async function pipeStream(

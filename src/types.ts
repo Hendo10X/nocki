@@ -48,6 +48,8 @@ export type ProcessEntry = {
   lastExitCode: number | null;
   pid: number | null;
 
+  roots: Set<number>;
+
   degradedReason: string | null;
 };
 

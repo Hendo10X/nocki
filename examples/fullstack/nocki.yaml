@@ -1,0 +1,44 @@
+version: 1
+
+services:
+  cache:
+    cmd: bun run apps/cache/index.ts
+    port: 6399
+    env:
+      PORT: "6399"
+    health_check:
+      tcp: 6399
+      timeout: 10s
+      interval: 300ms
+
+  api:
+    cmd: bun run apps/api/index.ts
+    depends_on: [cache]
+    env:
+      NODE_ENV: development
+      PORT: "3001"
+      READY_DELAY_MS: "1500"
+    health_check:
+      http: http://localhost:3001/health
+      timeout: 30s
+      interval: 500ms
+    restart:
+      policy: on-failure
+      max_attempts: 3
+      window: 60s
+
+  worker:
+    cmd: bun run apps/worker/index.ts
+    depends_on: [api]
+    restart:
+      policy: always
+
+  web:
+    cmd: bun run apps/web/index.ts
+    depends_on: [api]
+    env:
+      PORT: "3000"
+    health_check:
+      http: http://localhost:3000
+      timeout: 15s
+      interval: 500ms

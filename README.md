@@ -41,6 +41,24 @@ bun run build        # -> dist/nocki
 ./dist/nocki start
 ```
 
+## Try the example
+
+A runnable four-service demo (a TCP cache, an HTTP API with a `/health`
+endpoint, a worker, and a web server) lives in `examples/fullstack`:
+
+```sh
+cd examples/fullstack
+bun run ../../src/index.ts start          # boots cache -> api -> worker+web
+
+# in another terminal:
+bun run ../../src/index.ts status
+bun run ../../src/index.ts restart api
+bun run ../../src/index.ts stop
+```
+
+It exercises real TCP/HTTP health checks, health-gated boot, env injection,
+restart policies, and crash propagation against actual listening ports.
+
 ## Configuration: `nocki.yaml`
 
 Lives at the project root and is committed to version control.
@@ -123,7 +141,10 @@ Config Parse → Graph Build → Cycle Detection → Topological Sort
 - **Sequenced boot** spawns a level, polls health checks, and blocks
   progression until every service in the level is healthy. If one fails, boot
   aborts and reports which downstream services were therefore not started.
-- **Supervision** applies restart policies with the rolling ceiling.
+- **Supervision** applies restart policies with the rolling ceiling and a short
+  restart backoff. Each service is spawned in its own process group (POSIX
+  `setsid`), so teardown reaps the entire process tree — no orphaned children
+  left holding ports after `stop` or `restart`.
 - **Crash propagation** — when a service exhausts its restart ceiling, every
   service that transitively depends on it is marked degraded with the root
   cause (`worker degraded — upstream dependency api is unhealthy`). This is the
