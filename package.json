@@ -9,6 +9,7 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "test": "bun test",
+    "test:integration": "bun test test/integration.test.ts",
     "build": "bun build ./src/index.ts --compile --outfile dist/nocki",
     "typecheck": "tsc --noEmit"
   },
