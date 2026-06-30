@@ -25,20 +25,36 @@ rituals, boot-order bugs, and onboarding friction.
 
 nocki replaces all of that with one committed file and one command.
 
+## Install
+
+Prebuilt, self-contained binaries (no runtime required) for macOS and Linux:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Hendo10X/nocki/main/install.sh | sh
+```
+
+This downloads the right binary for your platform from the latest
+[GitHub Release](https://github.com/Hendo10X/nocki/releases) and installs it to
+`/usr/local/bin` (or `~/.local/bin`). Pin a version or change the location with
+`NOCKI_VERSION` / `NOCKI_INSTALL_DIR`. Windows is supported via WSL2.
+
+You can also download a binary directly from the releases page, `chmod +x` it,
+and put it on your `PATH`.
+
 ## Quick start
 
 ```sh
-bun install
-bun run src/index.ts init        # scaffold a nocki.yaml
-bun run src/index.ts validate    # check it and print boot order
-bun run src/index.ts start       # boot everything with the TUI
+nocki init        # scaffold a nocki.yaml
+nocki validate    # check it and print boot order
+nocki start       # boot everything with the TUI
 ```
 
-Build a single self-contained binary:
+## From source
 
 ```sh
-bun run build        # -> dist/nocki
-./dist/nocki start
+bun install
+bun run src/index.ts start    # run directly
+bun run build                 # compile a single binary -> dist/nocki
 ```
 
 ## Try the example

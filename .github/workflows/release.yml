@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build + publish binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cross-compile binaries
+        run: |
+          mkdir -p dist
+          targets="darwin-arm64 darwin-x64 linux-x64 linux-arm64"
+          for t in $targets; do
+            echo "building nocki-$t"
+            bun build ./src/index.ts --compile --target="bun-$t" --outfile "dist/nocki-$t"
+          done
+          ls -la dist
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum nocki-* > checksums.txt
+          cat checksums.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/nocki-darwin-arm64
+            dist/nocki-darwin-x64
+            dist/nocki-linux-x64
+            dist/nocki-linux-arm64
+            dist/checksums.txt
+          generate_release_notes: true
