@@ -11,6 +11,7 @@
     "test": "bun test",
     "test:integration": "bun test test/integration.test.ts",
     "build": "bun build ./src/index.ts --compile --outfile dist/nocki",
+    "build:all": "bun build ./src/index.ts --compile --target=bun-darwin-arm64 --outfile dist/nocki-darwin-arm64 && bun build ./src/index.ts --compile --target=bun-darwin-x64 --outfile dist/nocki-darwin-x64 && bun build ./src/index.ts --compile --target=bun-linux-x64 --outfile dist/nocki-linux-x64 && bun build ./src/index.ts --compile --target=bun-linux-arm64 --outfile dist/nocki-linux-arm64",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
