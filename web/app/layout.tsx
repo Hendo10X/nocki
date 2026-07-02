@@ -1,24 +1,23 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
+import { JetBrains_Mono, Geist, Inter } from "next/font/google";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
+
+// Primary: Inter (body). Secondary: Geist (display). Tertiary: JetBrains Mono (code).
+const body = Inter({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
+
+const display = Geist({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
 
 const mono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500", "700"],
-});
-
-const display = Bricolage_Grotesque({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const body = Hanken_Grotesk({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
 });
 
 const SITE = "https://github.com/Hendo10X/nocki";
