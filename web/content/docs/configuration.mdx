@@ -1,0 +1,78 @@
+---
+title: Configuration
+description: The nocki.yaml schema — services, dependencies, environment, and more.
+---
+
+The configuration file lives at your project root as `nocki.yaml` and is
+committed to version control.
+
+```yaml
+version: 1
+
+services:
+  cache:
+    cmd: redis-server
+    port: 6379
+    health_check:
+      tcp: 6379
+      timeout: 10s
+
+  api:
+    cmd: bun run dev
+    cwd: ./apps/api
+    depends_on: [cache]
+    env:
+      NODE_ENV: development
+    health_check:
+      http: http://localhost:3001/health
+      timeout: 30s
+    restart:
+      policy: on-failure
+      max_attempts: 3
+      window: 60s
+
+  web:
+    cmd: bun run dev
+    cwd: ./apps/web
+    depends_on: [api]
+```
+
+## Service fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `cmd` | string · **required** | The command to run. Executed through a shell. |
+| `cwd` | string | Working directory for the command. Defaults to `.`. |
+| `port` | number | Informational; also used as the default target for a `tcp` health check. |
+| `depends_on` | string[] | Services that must be healthy before this one starts. |
+| `env` | map | Environment variables injected into the process. |
+| `health_check` | map | How to tell the service is ready. See [Health & restarts](/docs/health-and-restarts). |
+| `restart` | map | Restart policy. See [Health & restarts](/docs/health-and-restarts). |
+
+## Durations
+
+`timeout`, `interval`, and `window` accept human-friendly durations:
+
+```yaml
+timeout: 30s     # 30 seconds
+interval: 500ms  # 500 milliseconds
+window: 2m       # 2 minutes
+```
+
+A bare number is treated as seconds (`timeout: 30` = 30 seconds).
+
+## Boot order
+
+nocki builds a directed acyclic graph from every `depends_on` and topologically
+sorts it into **levels**. Services in the same level share no dependency and are
+started in parallel:
+
+```
+Level 0: cache
+Level 1: api
+Level 2: web, worker   (parallel)
+```
+
+A circular dependency (`a → b → a`) is caught before anything starts and fails
+with a clear diagnostic. Run `nocki validate` to see the computed order without
+starting anything.

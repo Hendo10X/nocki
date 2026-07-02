@@ -1,0 +1,69 @@
+---
+title: Health & restarts
+description: Health checks that gate boot, and restart policies with a rolling ceiling.
+---
+
+## Health checks
+
+A service isn't considered "up" until its health check passes. nocki blocks the
+next boot level until every service in the current one is healthy — so
+dependents never start against a service that isn't ready.
+
+| Type | Description | Example |
+| --- | --- | --- |
+| `http` | Poll an HTTP endpoint until it returns 2xx | `http: http://localhost:3001/health` |
+| `tcp` | Attempt a TCP socket connection | `tcp: 6379` |
+| `cmd` | Run a shell command; pass on exit 0 | `cmd: redis-cli ping` |
+| `none` | No check — healthy on spawn (**default**) | _(omit `health_check`)_ |
+
+```yaml
+api:
+  cmd: bun run dev
+  health_check:
+    http: http://localhost:3001/health
+    timeout: 30s      # give up after this long
+    interval: 1s      # poll this often
+```
+
+Defaults are a 30s timeout and a 1s interval. If a service fails its health
+check before the timeout, boot aborts and nocki reports which downstream
+services were therefore not started.
+
+## Restart policies
+
+When a service exits, nocki decides whether to restart it based on its policy:
+
+| Policy | Behaviour |
+| --- | --- |
+| `always` | Restart on any exit |
+| `on-failure` | Restart only on a non-zero exit code |
+| `never` | Do not restart (**default**) |
+
+```yaml
+worker:
+  cmd: bun run worker
+  restart:
+    policy: on-failure
+    max_attempts: 3
+    window: 60s
+```
+
+### Rolling ceiling
+
+`max_attempts` and `window` form a rolling restart ceiling. If a service
+exceeds `max_attempts` restarts within `window` seconds, nocki stops trying and
+marks it **degraded**. Each restart also backs off slightly, so a crash-looping
+service doesn't spin the CPU.
+
+## Crash propagation
+
+This is the behaviour no other local-dev tool provides. When a service becomes
+degraded, nocki walks the dependency graph toward its dependents and flags each
+one with the root cause:
+
+```
+worker  ◌ degraded  (upstream dependency api is unhealthy)
+```
+
+Their status reflects the upstream failure, not their own process state — so
+you see *why* something is broken at a glance, not just *that* it is.
