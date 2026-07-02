@@ -1,0 +1,54 @@
+---
+title: Installation
+description: Install the nocki binary and boot your first services.
+---
+
+## Install
+
+Prebuilt, self-contained binaries (no runtime required) for macOS and Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Hendo10X/nocki/main/install.sh | sh
+```
+
+This picks the right binary for your platform from the latest
+[GitHub release](https://github.com/Hendo10X/nocki/releases) and installs it to
+`/usr/local/bin` (or `~/.local/bin`).
+
+<Callout title="Windows">
+  Windows isn't supported natively yet. Run nocki under WSL2, or build from
+  source with Bun.
+</Callout>
+
+You can pin a version or change the location:
+
+```bash
+NOCKI_VERSION=v0.1.0 NOCKI_INSTALL_DIR=~/bin \
+  curl -fsSL https://raw.githubusercontent.com/Hendo10X/nocki/main/install.sh | sh
+```
+
+## Quickstart
+
+From your project root:
+
+```bash
+nocki init        # scaffold a nocki.yaml
+nocki validate    # check it and print the boot order
+nocki start       # boot everything with the TUI
+```
+
+`nocki init` writes a starter `nocki.yaml`. Fill in your services, then
+`nocki start` brings the whole environment up in dependency order and shows a
+live dashboard. Press `q` to quit, and nocki stops every service cleanly.
+
+## From source
+
+nocki is built on [Bun](https://bun.sh):
+
+```bash
+git clone https://github.com/Hendo10X/nocki
+cd nocki
+bun install
+bun run src/index.ts start   # run directly
+bun run build                # compile a single binary -> dist/nocki
+```

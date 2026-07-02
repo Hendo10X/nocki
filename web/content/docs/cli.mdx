@@ -1,0 +1,61 @@
+---
+title: CLI reference
+description: Every nocki command and flag.
+---
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `nocki start` | Start all services per `nocki.yaml` |
+| `nocki start <service>` | Start a single service and its dependencies |
+| `nocki stop` | Stop all running services |
+| `nocki restart <service>` | Restart a named service |
+| `nocki status` | Print status of all services (non-interactive) |
+| `nocki logs <service>` | Print or tail logs for a service |
+| `nocki validate` | Parse and validate `nocki.yaml` without starting |
+| `nocki init` | Scaffold a `nocki.yaml` interactively |
+
+`status`, `stop`, and `restart` talk to a running `nocki start` instance over a
+Unix control socket at `.nocki/control.sock`.
+
+## Flags
+
+| Flag | Applies to | Description |
+| --- | --- | --- |
+| `-c, --config <path>` | all | Path to the config file (default: `./nocki.yaml`) |
+| `--no-tui` | `start` | Run without the TUI; stream logs to stdout |
+| `--ci` | `start` | Headless mode for CI; exit 1 if boot fails |
+| `-f, --follow` | `logs` | Follow appended output |
+| `--json` | `status` | Emit JSON |
+
+`nocki status` exits `2` if any service is degraded or crashed, which makes it
+easy to gate scripts on a healthy environment.
+
+## Terminal UI
+
+`nocki start` opens a split-pane TUI: a service list with live status
+indicators, and a unified, colour-coded log stream.
+
+| Symbol | Meaning |
+| --- | --- |
+| `●` green | Healthy |
+| `◐` yellow | Starting / awaiting health check |
+| `●` red | Crashed |
+| `◌` grey | Degraded (including upstream failure) |
+| `—` grey | Stopped |
+
+Keys: **↑/↓** navigate · **enter** focus a service's logs · **esc** back to the
+unified view · **r** restart · **k** kill · **f** filter to the selected service
+· **/** search · **q** quit (stops all services).
+
+## CI usage
+
+Run a full environment headlessly and fail the job if anything is unhealthy:
+
+```bash
+nocki start --ci
+```
+
+It boots every service, health-gates them, and exits non-zero if boot fails;
+otherwise it stays up so your test step can run against the live environment.
