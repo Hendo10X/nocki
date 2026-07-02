@@ -1,18 +1,18 @@
 ---
 title: Introduction
-description: A local development process orchestrator — boot ordering, health checks, supervision, and unified logs.
+description: A local development process orchestrator for boot ordering, health checks, supervision, and unified logs.
 ---
 
 **Your development environment should start itself.**
 
-Modern apps are many services — a frontend, an API, workers, a cache, a database.
+Modern apps are many services: a frontend, an API, workers, a cache, a database.
 Bringing them up locally usually means juggling terminal tabs, ad-hoc shell
 scripts, or misusing `docker-compose`. The cost is invisible but compounding:
 startup rituals, boot-order bugs, and onboarding friction.
 
 nocki replaces all of that. You describe your services once in a `nocki.yaml`,
 and nocki handles **boot ordering**, **health verification**, **process
-supervision**, **crash recovery**, and **log aggregation** — presenting
+supervision**, **crash recovery**, and **log aggregation**, presenting
 everything through a clean terminal UI.
 
 ## What it is not
@@ -30,7 +30,7 @@ Config Parse → Graph Build → Cycle Detection → Topological Sort
 ```
 
 - Your `depends_on` declarations form a dependency graph. A topological sort
-  produces **boot levels** — services in the same level start in parallel.
+  produces **boot levels**: services in the same level start in parallel.
 - Each level is **health-gated**: nocki won't start a level until every service
   in the previous one passes its health check.
 - If a service crashes past its restart ceiling, it's marked **degraded** and

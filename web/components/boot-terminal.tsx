@@ -118,7 +118,7 @@ export function BootTerminal() {
   }, []);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card/80 ring-top backdrop-blur">
+    <div className="overflow-hidden rounded-xl border border-border bg-card/80 backdrop-blur">
       {/* title bar */}
       <div className="flex items-center gap-2 border-b border-border/70 px-4 py-2.5">
         <span className="flex gap-1.5">

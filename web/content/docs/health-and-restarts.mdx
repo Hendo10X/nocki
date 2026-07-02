@@ -6,7 +6,7 @@ description: Health checks that gate boot, and restart policies with a rolling c
 ## Health checks
 
 A service isn't considered "up" until its health check passes. nocki blocks the
-next boot level until every service in the current one is healthy — so
+next boot level until every service in the current one is healthy, so
 dependents never start against a service that isn't ready.
 
 | Type | Description | Example |
@@ -14,7 +14,7 @@ dependents never start against a service that isn't ready.
 | `http` | Poll an HTTP endpoint until it returns 2xx | `http: http://localhost:3001/health` |
 | `tcp` | Attempt a TCP socket connection | `tcp: 6379` |
 | `cmd` | Run a shell command; pass on exit 0 | `cmd: redis-cli ping` |
-| `none` | No check — healthy on spawn (**default**) | _(omit `health_check`)_ |
+| `none` | No check; healthy on spawn (**default**) | _(omit `health_check`)_ |
 
 ```yaml
 api:
@@ -65,5 +65,5 @@ one with the root cause:
 worker  ◌ degraded  (upstream dependency api is unhealthy)
 ```
 
-Their status reflects the upstream failure, not their own process state — so
+Their status reflects the upstream failure, not their own process state, so
 you see *why* something is broken at a glance, not just *that* it is.

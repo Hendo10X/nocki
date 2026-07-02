@@ -5,7 +5,7 @@ export function InstallCommand({ command, className }: { command: string; classN
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-border bg-card/70 px-4 py-3 ring-top backdrop-blur",
+        "flex items-center gap-3 rounded-xl border border-border bg-card/70 px-4 py-3 backdrop-blur",
         className,
       )}
     >

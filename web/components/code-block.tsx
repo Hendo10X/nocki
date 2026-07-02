@@ -18,7 +18,7 @@ export async function CodeBlock({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-border bg-card/60 ring-top",
+        "group relative overflow-hidden rounded-xl border border-border bg-card/60",
         className,
       )}
     >

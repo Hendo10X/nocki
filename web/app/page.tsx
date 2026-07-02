@@ -14,7 +14,6 @@ import { BootTerminal } from "@/components/boot-terminal";
 import { InstallCommand } from "@/components/install-command";
 import { DownloadButtons } from "@/components/download-buttons";
 import { CodeBlock } from "@/components/code-block";
-import { StatusDot } from "@/components/status-dot";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
@@ -23,7 +22,7 @@ const FEATURES = [
   {
     icon: WorkflowSquare01Icon,
     title: "Boot ordering",
-    body: "Declare depends_on once. nocki builds a dependency graph, detects cycles, and starts services in the right order — parallelising what it can.",
+    body: "Declare depends_on once. nocki builds a dependency graph, detects cycles, and starts services in the right order, parallelising what it can.",
   },
   {
     icon: Activity03Icon,
@@ -38,7 +37,7 @@ const FEATURES = [
   {
     icon: TerminalIcon,
     title: "Unified logs",
-    body: "Every service's output in one colour-coded stream — filter, search, and focus, all from a clean terminal UI.",
+    body: "Every service's output in one colour-coded stream: filter, search, and focus, all from a clean terminal UI.",
   },
 ];
 
@@ -73,30 +72,21 @@ export default function Home() {
       {/* backdrop */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_50%_at_50%_0%,black,transparent)]" />
-        <div className="absolute inset-x-0 top-0 h-[520px] glow" />
       </div>
 
       <SiteNav />
 
       {/* Hero */}
-      <section className="mx-auto max-w-5xl px-5 pt-16 pb-10 sm:pt-24">
+      <section className="mx-auto max-w-5xl px-5 pt-12 pb-10 sm:pt-20">
         <div className="mx-auto max-w-2xl text-center">
-          <Link
-            href={site.releases}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 font-mono text-xs text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
-          >
-            <StatusDot status="healthy" />
-            {site.version} — self-contained binary, no runtime
-          </Link>
-
-          <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-6xl">
+          <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-6xl">
             Your development environment should{" "}
             <span className="text-healthy">start itself.</span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg">
-            nocki is a local process orchestrator. Describe your services once —
-            it handles boot ordering, health checks, supervision, and unified
+            nocki is a local process orchestrator. Describe your services once.
+            It handles boot ordering, health checks, supervision, and unified
             logs, all in your terminal.
           </p>
 
@@ -130,7 +120,7 @@ export default function Home() {
 
       {/* Features */}
       <section className="mx-auto max-w-5xl px-5 py-16">
-        <p className="font-mono text-xs uppercase tracking-widest text-healthy">What it does</p>
+        <p className="text-xs font-medium uppercase tracking-widest text-healthy">What it does</p>
         <h2 className="mt-3 max-w-lg font-display text-2xl font-semibold tracking-tight sm:text-3xl">
           One file replaces the startup ritual.
         </h2>
@@ -152,14 +142,14 @@ export default function Home() {
       <section className="mx-auto max-w-5xl px-5 py-16">
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
           <div className="lg:sticky lg:top-24">
-            <p className="font-mono text-xs uppercase tracking-widest text-healthy">nocki.yaml</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-healthy">nocki.yaml</p>
             <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Committed, version-controlled, obvious.
             </h2>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
               A single file at your project root describes every service and how
               they relate. New teammates run one command and get a working
-              environment — no tribal knowledge, no boot-order bugs.
+              environment. No tribal knowledge, no boot-order bugs.
             </p>
             <div className="mt-6">
               <CodeBlock code={COMMANDS} lang="bash" filename="terminal" />
@@ -171,7 +161,7 @@ export default function Home() {
 
       {/* Download */}
       <section id="download" className="mx-auto max-w-5xl px-5 py-16">
-        <div className="rounded-3xl border border-border bg-card/40 p-8 ring-top sm:p-12">
+        <div className="rounded-3xl border border-border bg-card/40 p-8 sm:p-12">
           <div className="mx-auto max-w-xl text-center">
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Install nocki

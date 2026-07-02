@@ -68,6 +68,9 @@
   --ring: oklch(0.86 0.16 159);
   --radius: 0.5rem;
 
+  /* Headers: Geist Pixel (Google Fonts), falling back to Inter. */
+  --font-display: "Geist Pixel", var(--font-body), sans-serif;
+
   --status-healthy: oklch(0.86 0.16 159);
   --status-starting: oklch(0.83 0.14 85);
   --status-crashed: oklch(0.68 0.2 22);
@@ -81,12 +84,16 @@
   }
   html {
     @apply font-sans;
+    /* Global scale-down: rem-based type and spacing shrink proportionally. */
+    font-size: 15px;
     scroll-behavior: smooth;
     color-scheme: dark;
   }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "cv01";
+    /* Geist Pixel ships a single weight; don't fake heavier ones. */
+    font-synthesis: none;
   }
   ::selection {
     background: color-mix(in oklch, var(--primary) 30%, transparent);
@@ -116,14 +123,6 @@
     background-size: 22px 22px;
     background-position: -1px -1px;
   }
-  /* Soft green glow, used behind the hero. */
-  .glow {
-    background: radial-gradient(
-      60% 55% at 50% 0%,
-      color-mix(in oklch, var(--primary) 16%, transparent) 0%,
-      transparent 70%
-    );
-  }
   .text-balance {
     text-wrap: balance;
   }
@@ -134,12 +133,6 @@
     50% {
       opacity: 0;
     }
-  }
-  /* Subtle top-edge highlight for cards/terminals. */
-  .ring-top {
-    box-shadow:
-      inset 0 1px 0 0 color-mix(in oklch, var(--foreground) 8%, transparent),
-      0 24px 60px -20px rgb(0 0 0 / 0.6);
   }
 }
 
